@@ -155,14 +155,15 @@ nacpsection = (get: :tmp_17135028, put: :tmp_17135029)
 ```nim
 Hacbin = ref object
  headers*: seq[int8]
- assets: Assetheader
+ assets*: Assetheader
  image*: seq[int8]
  nacp*: Nacpsection
+ romfs*: seq[int8]
 ```
 
 ## **let** hacbin
 
 
 ```nim
-hacbin = (get: :tmp_17245044, put: :tmp_17245045)
+hacbin = (get: :tmp_17245052, put: :tmp_17245053)
 ```

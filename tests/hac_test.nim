@@ -11,6 +11,7 @@ var nro = file.toHACBin
 for title in nro.nacp.titles:
     echo title.publisher
     echo title.name
+echo nro.assets.icon.offset
 # echo nro.iconAsset.offset
 # echo nro.nacpAsset.offset
 # echo nro.romfsAsset.offset

@@ -46,9 +46,10 @@ createParser(assetheader):
 createParser(*hacbin):
     8: *{headers}
     s: _ = "ASET"
-    *assetheader: assets
+    *assetheader: *assets
     8: *image[assets.icon.size]
     *nacpsection: *nacp
+    8 {cond: not s.atEnd}: *romfs{s.atEnd}
 
 
 export toHACBin
