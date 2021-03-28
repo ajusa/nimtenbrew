@@ -64,7 +64,7 @@ createParser(*hacbin):
     *assetheader: *assets
     8 {@hook: (assets.icon.size = _.len; assets.update)}: *icon[assets.icon.size]
     *nacpsection: *nacp
-    8 {cond: not s.atEnd}: *romfs{s.atEnd}
+    8 {cond: not s.atEnd, @hook: (assets.romfs.size = _.len; assets.update)}: *romfs{s.atEnd}
 
 export toHACBin
 export fromHACBin
