@@ -8,6 +8,7 @@ import nimtenbrew
 
 var file = readFile("test.nro")
 var nro = file.toHACBin
+nro.nacp.setTitles("My Game", "ajusa")
 for title in nro.nacp.titles:
     echo title.publisher
     echo title.name
