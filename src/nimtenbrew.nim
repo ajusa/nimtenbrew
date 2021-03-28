@@ -1,37 +1,55 @@
-import binarylang, encodings, strutils
-# var fbs = newFileBitStream("LOVEPotion.3dsx")
-# var sbs = newStringBitstream("")
-# createParser(test):
-#     8: bytes{s.atend}
-# var empty = test.get(sbs)
-# assert empty.bytes.len == 0
-proc toUTF16(str: string, size: int): seq[int8] =
+import binarylang, encodings, strutils, sequtils, binarylang/plugins
+proc toBytes(str: string, size: int, encoding = "utf-8"): seq[int8] =
     result = newSeq[int8](size)
-    let utf16 = cast[seq[int8]](str.convert("utf-16", "utf-8"))
-    for i in 2..<utf16.len: result[i-2] = utf16[i] # skip the byte order mark
-proc fromUTF16(bytes: seq[int8]): string = cast[string](bytes)
+    let utf16 = cast[seq[int8]](str.convert(encoding, "utf-8"))
+    result.insert(utf16[2..^1])
+proc `$`(bytes: seq[int8]): string = cast[string](bytes)
+proc toUTF8(str: string, size: int): seq[int8] =
+    result = newSeq[int8](size)
+    let utf8 = cast[seq[int8]](str)
+    for i in 0..<utf8.len: result[i] = utf8[i] # skip the byte order mark
+createParser(*ctrtitle):
+    8 {@get: $_, @set: _.toBytes(0x80, "utf-16")}: *shortDescription[0x80]
+    8 {@get: $_, @set: _.toBytes(0x100, "utf-16")}: *longDescription[0x100]
+    8 {@get: $_, @set: _.toBytes(0x80, "utf-16")}: *publisher[0x80]
 
-createParser(apptitle):
-    8 {@get: _.fromUTF16, @set: _.toUTF16(0x80)}: shortDescription[0x80]
-    8 {@get: _.fromUTF16, @set: _.toUTF16(0x100)}: longDescription[0x100]
-    8 {@get: _.fromUTF16, @set: _.toUTF16(0x80)}: *publisher[0x80]
-
-createParser(*smdh):
-    8: {file}
+createParser(*ctrbin):
+    8: *{file}
     s: _ = "SMDH"
-    16: version
-    16: reserved1 #reserved
-    *apptitle: *titles[16]
-    8: settings[0x30]
-    8: reserved2[0x8] #reserved
-    8: icons[0x1680]
+    16: *version
+    16: *reserved1 #reserved
+    *ctrtitle: *titles[16]
+    8: *settings[0x30]
+    8: *reserved2[0x8] #reserved
+    8: *smallIcon[0x480]
+    8: *largeIcon[0x1200]
+    8 {cond: not s.atEnd}: *romfs{s.atEnd}
 
-proc toHex(input: seq[int8]): string =
-    for i in input: result &= i.toHex
-export toSMDH
-# var obj = smdh.get(fbs)
-# fbs.close()
-# for title in obj.titles.mitems:
-#     title.publisher = "ajusa"
-# var output = newFileBitStream("output.3dsx", fmReadWrite)
-# smdh.put(output, obj)
+export toCTRBin
+export fromCTRBin
+
+createParser(*hactitle):
+    8 {@get: $_, @set: _.toBytes(0x200)}: *name[0x200]
+    8 {@get: $_, @set: _.toBytes(0x100)}: *publisher[0x100]
+
+createParser(*nacpsection):
+    *hactitle: *titles[0x10]
+    8: *settings[0x1000]
+createParser(assetsection):
+    l64: *offset
+    l64: *size
+createParser(assetheader):
+    32: *version
+    *assetsection: *icon
+    *assetsection: *nacp
+    *assetsection: *romfs
+createParser(*hacbin):
+    8: *{headers}
+    s: _ = "ASET"
+    *assetheader: assets
+    8: *image[assets.icon.size]
+    *nacpsection: *nacp
+
+
+export toHACBin
+export fromHACBin
