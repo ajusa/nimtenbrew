@@ -21,49 +21,49 @@ Ctrtitle = ref object
 
 
 ```nim
-proc shortDescription(:tmp_16960954: Ctrtitle): auto
+proc shortDescription(:tmp_16960951: Ctrtitle): auto
 ```
 
 ## **proc** shortDescription=
 
 
 ```nim
-proc shortDescription=(:tmp_16960961: var Ctrtitle; x: any)
+proc shortDescription=(:tmp_16960958: var Ctrtitle; x: any)
 ```
 
 ## **proc** longDescription
 
 
 ```nim
-proc longDescription(:tmp_16960962: Ctrtitle): auto
+proc longDescription(:tmp_16960959: Ctrtitle): auto
 ```
 
 ## **proc** longDescription=
 
 
 ```nim
-proc longDescription=(:tmp_16960963: var Ctrtitle; x: any)
+proc longDescription=(:tmp_16960960: var Ctrtitle; x: any)
 ```
 
 ## **proc** publisher
 
 
 ```nim
-proc publisher(:tmp_16960964: Ctrtitle): auto
+proc publisher(:tmp_16960961: Ctrtitle): auto
 ```
 
 ## **proc** publisher=
 
 
 ```nim
-proc publisher=(:tmp_16960965: var Ctrtitle; x: any)
+proc publisher=(:tmp_16960962: var Ctrtitle; x: any)
 ```
 
 ## **let** ctrtitle
 
 
 ```nim
-ctrtitle = (get: :tmp_16960966, put: :tmp_16960967)
+ctrtitle = (get: :tmp_16960963, put: :tmp_16960964)
 ```
 
 ## **type** Ctrbin
@@ -89,6 +89,14 @@ Ctrbin = ref object
 ctrbin = (get: :tmp_17020082, put: :tmp_17020083)
 ```
 
+## **proc** setTitles
+
+
+```nim
+proc setTitles(bin: var Ctrbin;
+ shortDescription, longDescription, publisher: string) {.raises: [EncodingError, OSError].}
+```
+
 ## **type** Hactitle
 
 
@@ -102,35 +110,35 @@ Hactitle = ref object
 
 
 ```nim
-proc name(:tmp_17125157: Hactitle): auto
+proc name(:tmp_17135349: Hactitle): auto
 ```
 
 ## **proc** name=
 
 
 ```nim
-proc name=(:tmp_17125158: var Hactitle; x: any)
+proc name=(:tmp_17135350: var Hactitle; x: any)
 ```
 
 ## **proc** publisher
 
 
 ```nim
-proc publisher(:tmp_17125159: Hactitle): auto
+proc publisher(:tmp_17135351: Hactitle): auto
 ```
 
 ## **proc** publisher=
 
 
 ```nim
-proc publisher=(:tmp_17125160: var Hactitle; x: any)
+proc publisher=(:tmp_17135352: var Hactitle; x: any)
 ```
 
 ## **let** hactitle
 
 
 ```nim
-hactitle = (get: :tmp_17125161, put: :tmp_17125162)
+hactitle = (get: :tmp_17135353, put: :tmp_17135354)
 ```
 
 ## **type** Nacpsection
@@ -146,7 +154,14 @@ Nacpsection = ref object
 
 
 ```nim
-nacpsection = (get: :tmp_17135028, put: :tmp_17135029)
+nacpsection = (get: :tmp_17145028, put: :tmp_17145029)
+```
+
+## **proc** setTitles
+
+
+```nim
+proc setTitles(nacp: var Nacpsection; name, publisher: string)
 ```
 
 ## **type** Hacbin
@@ -165,5 +180,5 @@ Hacbin = ref object
 
 
 ```nim
-hacbin = (get: :tmp_17245052, put: :tmp_17245053)
+hacbin = (get: :tmp_17265052, put: :tmp_17265053)
 ```
