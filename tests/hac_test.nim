@@ -23,6 +23,7 @@ dump nro.assets.icon.offset
 dump nro.assets.nacp.offset
 dump nro.assets.icon.size
 dump nro.assets.romfs.offset
+dump nro.assets.romfs.size
 # echo nro.iconAsset.offset
 # echo nro.nacpAsset.offset
 # echo nro.romfsAsset.offset
