@@ -53,11 +53,16 @@ createParser(assetheader):
     *assetsection: *icon
     *assetsection: *nacp
     *assetsection: *romfs
+proc update(assets: var Assetheader) =
+    assets.icon.offset = 56 # size of assetheaders
+    assets.nacp.offset = assets.icon.offset + assets.icon.size
+    assets.romfs.offset = assets.nacp.offset + assets.nacp.size
+    if assets.romfs.size == 0: assets.romfs.offset = 0
 createParser(*hacbin):
     8: *{headers}
     s: _ = "ASET"
     *assetheader: *assets
-    8 {@hook: (assets.icon.size = _.len)}: *image[assets.icon.size]
+    8 {@hook: (assets.icon.size = _.len; assets.update)}: *icon[assets.icon.size]
     *nacpsection: *nacp
     8 {cond: not s.atEnd}: *romfs{s.atEnd}
 

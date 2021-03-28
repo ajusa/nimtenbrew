@@ -171,28 +171,28 @@ proc setTitles(nacp: var Nacpsection; name, publisher: string)
 Hacbin = ref object
  headers*: seq[int8]
  assets*: Assetheader
- imageImpl*: seq[int8]
+ iconImpl*: seq[int8]
  nacp*: Nacpsection
  romfs*: seq[int8]
 ```
 
-## **proc** image
+## **proc** icon
 
 
 ```nim
-proc image(:tmp_17265052: Hacbin): auto
+proc icon(:tmp_17265172: Hacbin): auto
 ```
 
-## **proc** image=
+## **proc** icon=
 
 
 ```nim
-proc image=(:tmp_17265053: var Hacbin; x: any)
+proc icon=(:tmp_17265173: var Hacbin; x: any)
 ```
 
 ## **let** hacbin
 
 
 ```nim
-hacbin = (get: :tmp_17265054, put: :tmp_17265055)
+hacbin = (get: :tmp_17265174, put: :tmp_17265175)
 ```
