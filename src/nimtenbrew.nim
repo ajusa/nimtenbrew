@@ -2,11 +2,12 @@ import binarylang, encodings, strutils, sequtils, binarylang/plugins
 proc toUTF16(str: string, size: int): seq[int8] =
     result = newSeq[int8](size)
     let utf16 = cast[seq[int8]](str.convert("utf-16", "utf-8"))
-    result.insert(utf16[2..^1])
+    for i in 2..<utf16.len: result[i-2] = utf16[i]
 proc `$`(bytes: seq[int8]): string = cast[string](bytes)
 proc toUTF8(str: string, size: int): seq[int8] =
     result = newSeq[int8](size)
-    result.insert(cast[seq[int8]](str))
+    var utf8 = cast[seq[int8]](str)
+    for i in 0..<utf8.len: result[i] = utf8[i]
 createParser(*ctrtitle):
     8 {@get: $_, @set: _.toUTF16(0x80)}: *shortDescription[0x80]
     8 {@get: $_, @set: _.toUTF16(0x100)}: *longDescription[0x100]
