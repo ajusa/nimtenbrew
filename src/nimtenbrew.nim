@@ -20,8 +20,8 @@ createParser(*ctrbin):
     *ctrtitle: *titles[16]
     8: *settings[0x30]
     8: *reserved2[0x8] #reserved
-    8: *smallIcon[0x480]
-    8: *largeIcon[0x1200]
+    u16: *smallIcon[0x480 div 2]
+    u16: *largeIcon[0x1200 div 2]
     8 {cond: not s.atEnd}: *romfs{s.atEnd}
 
 proc setTitles*(bin: var CTRBin, shortDescription, longDescription, publisher: string) =
