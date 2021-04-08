@@ -6,7 +6,7 @@ import nimtenbrew, sugar
 #     echo title.name
 #     echo title.publisher
 
-var file = readFile("test.nro")
+var file = readFile("./test.nro")
 var nro = file.toHACBin
 assert nro.fromHACBin == file # Symmetric
 nro.nacp.setTitles("My Game", "ajusa")
@@ -17,8 +17,8 @@ dump nro.assets.icon.offset
 dump nro.assets.icon.size
 dump nro.assets.nacp.offset
 dump nro.assets.romfs.offset
-nro.icon = @[1'i8, 2, 3, 4]
-echo "updated icon"
+# nro.icon = @[1'i8, 2, 3, 4]
+# echo "updated icon"
 dump nro.assets.icon.offset
 dump nro.assets.nacp.offset
 dump nro.assets.icon.size
