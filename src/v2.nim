@@ -3,7 +3,10 @@ type
   MagicFill[N : static[string], T] = object
     filled: T
   List[T] = seq[T]
-  UTF16[N: static[int]] = string
+  UTF16[N: static[int]] = object
+    value: string
+  UTF8[N: static[int]] = object
+    value: string
   Rest = string
 type
   AppTitle = object
@@ -22,11 +25,18 @@ type
     rest: List[byte]
 
 proc fromFlatty*[T](s: string, i: var int, x: var UTF16[T]) =
-  x = s[i..<(i+T)].fromUTF16()
+  x.value = s[i..<(i+T)].fromUTF16()
   i += T
 
 proc toFlatty*[T](s: var string, x: UTF16[T]) =
-  s.add(x.toUTF16LE().alignLeft(T, '\0'))
+  s.add(x.value.toUTF16LE().alignLeft(T, '\0'))
+
+proc fromFlatty*[T](s: string, i: var int, x: var UTF8[T]) =
+  x.value = s[i..<(i+T)]
+  i += T
+
+proc toFlatty*[T](s: var string, x: UTF8[T]) =
+  s.add(x.value.alignLeft(T, '\0'))
 
 proc fromFlatty*(s: string, i: var int, x: void) = discard
 proc fromFlatty*[T](s: string, i: var int, x: var List[T]) =
@@ -56,8 +66,9 @@ var str = readFile("test.3dsx")
 echo str.len
 
 var a = str.fromFlatty(CtrBin)
-echo a.titles[0].short
+# echo a.titles[0].short
 echo a.rest.len
-a.titles[0].short = "my game"
-echo a.titles[0].short.toFlatty().len
-echo a.toFlatty.len
+a.titles[0].short.value = "3DSHelloWorld"
+assert a.toFlatty() == str
+# echo a.titles[0].short.toFlatty().len
+# echo a.toFlatty.len
