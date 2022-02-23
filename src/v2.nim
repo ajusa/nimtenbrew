@@ -1,37 +1,32 @@
 import flatty, flatty/hexprint, encode, print, strutils
 type 
-  MagicFill[N : static[string], T] = distinct T
-  Magic[N : static[string]] = MagicFill[N, void]
-  Size[N : static[int], T] = distinct T
+  MagicFill[N : static[string], T] = object
+    filled: T
   List[T] = seq[T]
-  UTF16 = string
+  UTF16[N: static[int]] = string
+  Rest = string
 type
   AppTitle = object
-    short: Size[0x80, UTF16]
-    long: Size[0x100, UTF16]
-    publisher: Size[0x80, UTF16]
+    short: UTF16[0x80]
+    long: UTF16[0x100]
+    publisher: UTF16[0x80]
   CtrBin = object
     file: MagicFill["SMDH", List[byte]]
     version: uint16
-    reserved: uint16
+    reserved1: uint16
     titles: array[16, AppTitle]
+    settings: array[0x30, byte]
+    reserved2: array[0x8, byte]
+    smallIcon: array[0x480, byte]
+    largeIcon: array[0x1200, byte]
+    rest: List[byte]
 
-converter fromSize[N, T](x: Size[N, T]): T = cast[T](x)
-converter toSize[N, T](x: T): Size[N, T] = cast[Size[N, T]](x)
+proc fromFlatty*[T](s: string, i: var int, x: var UTF16[T]) =
+  x = s[i..<(i+T)].fromUTF16()
+  i += T
 
-converter fromMagicFill[N, T](x: MagicFill[N, T]): T = cast[T](x)
-converter toMagicFill[N, T](x: T): MagicFill[N, T] = cast[MagicFill[N, T]](x)
-
-proc fromFlatty*(s: string, i: var int, x: var UTF16) =
-  x = s.fromUTF16()
-  i += s.len
-
-proc fromFlatty*[N, T](s: string, i: var int, x: var Size[N, T]) =
-  var upper = i + N
-  var trunc = s[i..<upper]
-  var tmp: T
-  trunc.fromFlatty(i, tmp)
-  x = cast[Size[N, T]](tmp)
+proc toFlatty*[T](s: var string, x: UTF16[T]) =
+  s.add(x.toUTF16LE().alignLeft(T, '\0'))
 
 proc fromFlatty*(s: string, i: var int, x: void) = discard
 proc fromFlatty*[T](s: string, i: var int, x: var List[T]) =
@@ -40,6 +35,10 @@ proc fromFlatty*[T](s: string, i: var int, x: var List[T]) =
     s.fromFlatty(i, j)
     x.add(j)
 
+proc toFlatty*[T](s: var string, x: List[T]) =
+  for i in x:
+    s.toFlatty(i)
+
 proc fromFlatty*[N, T](s: string, i: var int, x: var MagicFill[N, T]) =
   var loc = s.find(N, i, last = len(s))
   assert loc != -1
@@ -47,13 +46,18 @@ proc fromFlatty*[N, T](s: string, i: var int, x: var MagicFill[N, T]) =
   var trunc = s[i..<loc]
   trunc.fromFlatty(i, tmp)
   i = loc + len(N)
-  x = cast[MagicFill[N, T]](tmp)
+  x.filled = tmp
 
-
+proc toFlatty*[N, T](s: var string, x: MagicFill[N, T]) =
+  s.toFlatty(x.filled)
+  s.add(N)
 
 var str = readFile("test.3dsx")
+echo str.len
 
 var a = str.fromFlatty(CtrBin)
-# var b = str.fromFlatty(MagicFill["SMDH", List[byte]])
-echo a
-# echo a.file.len
+echo a.titles[0].short
+echo a.rest.len
+a.titles[0].short = "my game"
+echo a.titles[0].short.toFlatty().len
+echo a.toFlatty.len
