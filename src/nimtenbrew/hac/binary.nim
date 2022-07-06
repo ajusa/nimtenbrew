@@ -54,7 +54,7 @@ proc setIcon*(assets: AssetsHeader, nroSize: uint, jpg_buffer: string,
 proc setNacp*(assets: AssetsHeader, nroSize: uint, nacp_buffer: string,
         buffer: FileStream, offset: var int = -1) =
     ## Set the NACP for the NRO
-    ## `offset` should be relative to the nro::totalSize + iconSize
+    ## `offset` should be relative to the assetsHeaderSize + iconSize
 
     if nacp_buffer.isEmptyOrWhitespace():
         return
@@ -70,7 +70,7 @@ proc setNacp*(assets: AssetsHeader, nroSize: uint, nacp_buffer: string,
 proc setRomfs*(assets: AssetsHeader, nroSize: uint, romfs_buffer: string,
         buffer: FileStream, offset: var int = -1) =
     ## Set the RomFS for the NRO
-    ## `offset` should be relative to the nro::totalSize + iconSize + nacpSize
+    ## `offset` should be relative to the assetsHeaderSize + iconSize + nacpSize
 
     if romfs_buffer.isEmptyOrWhitespace():
         return
