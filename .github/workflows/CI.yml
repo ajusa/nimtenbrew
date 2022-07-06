@@ -1,0 +1,57 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  Windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - id: commit
+        uses: pr-mpt/actions-commit-hash@v1
+
+      - name: Setup Nim environment
+        uses: jiro4989/setup-nim-action@v1.3.54
+
+      - run: nimble test
+
+  macOS:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - id: commit
+        uses: pr-mpt/actions-commit-hash@v1
+
+      - name: Setup Nim environment
+        uses: jiro4989/setup-nim-action@v1.3.54
+
+      - run: nimble test
+
+  Linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - id: commit
+        uses: pr-mpt/actions-commit-hash@v1
+
+      - name: Setup Nim environment
+        uses: jiro4989/setup-nim-action@v1.3.54
+
+      - run: nimble test
