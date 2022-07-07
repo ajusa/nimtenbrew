@@ -10,8 +10,8 @@ import streams
 let stream = newFileStream("./tests/data/hac/icon_no_romfs.nro", fmRead)
 
 assert(not stream.isNil)
-discard toNroStart(stream.readStr(START_SIZE.int))
-let header = toNroHeader(stream.readStr(NRO_HEADER_SIZE.int))
+discard toHacStart(stream.readStr(START_SIZE.int))
+let header = toHacHeader(stream.readStr(NRO_HEADER_SIZE.int))
 
 # reset to zero
 stream.setPosition(0)
