@@ -1,16 +1,11 @@
 import binarylang
 
-import assets
-
-import streams
-import strutils
-
 ## NRO Start
 ## https://switchbrew.org/wiki/NRO#Start
 struct(*hacStart, endian = l):
-    u32: *unused
+    u32: unused
     u32: *modOffset
-    u8: *padding[0x08]
+    u8: padding[0x08]
 
 const START_SIZE*: uint = 0x10
 
@@ -31,9 +26,9 @@ struct(*hacHeader, endian = l):
     u32: *flags
     *hacSegmentHeader: *segmentHeaders[0x03]
     u32: *bssSize
-    u32: *reserved
-    u8: moduleId[0x20]
-    u32: dsoOffset
+    u32: reserved
+    u8: *moduleId[0x20]
+    u32: *dsoOffset
     u32: reservedTwo
     *hacSegmentHeader: *segmentHeadersTwo[0x03]
 

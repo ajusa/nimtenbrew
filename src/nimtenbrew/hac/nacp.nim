@@ -1,5 +1,7 @@
 import binarylang
 
+import ../utf
+
 import strutils
 
 ## ApplicationTitle
@@ -47,9 +49,6 @@ struct(*nacp, endian = l):
     u8: x3140Unk[0xEC0]
 
 const NACP_STRUCT_SIZE*: uint = 0x4000
-
-proc toUtf8(str: seq[uint8]): string =
-    return cast[string](str).replace("\0", "")
 
 proc getTitles*(nacp: Nacp): seq[seq[string]] =
     let titles = nacp.appTitles

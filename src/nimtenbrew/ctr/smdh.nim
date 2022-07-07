@@ -1,8 +1,10 @@
 import binarylang
-import encode
 
 import strutils
-import encodings
+
+import ../utf
+
+import icon
 
 ## SMDH Title Info
 ## https://www.3dbrew.org/wiki/SMDH#Application_Titles
@@ -41,21 +43,15 @@ struct(*smdh, endian = l):
 
 const SMDH_STRUCT_SIZE*: uint = 0x36C0
 
-proc toUtf16(str: string, align: int): seq[uint16] =
-    let converted = encode.toUtf16LE(str)
-        .alignLeft(align, '\0')
+proc setIcon*(smdh: var Smdh, pngPath: string) =
+    ## Sets the icon for the `smdh` from a PNG at `pngPath`
 
-    for index in 0 ..< len(converted):
-        result.add(converted[index].uint16)
-
-    return result
-
-proc toUtf8(str: seq[uint16]): string =
-    return cast[string](cast[seq[int8]](str)).convert("UTF-8",
-            "UTF-16").replace("\0", "")
+    let pngData = icon.load(png_path, 48)
+    smdh.largeIcon = icon.convertPNGToIcon(pngData)
 
 proc setTitles*(smdh: var Smdh, shortDescription, longDescription,
         publisher: string = "") =
+    ## Sets the Title information for the `smdh`
 
     for title in smdh.titles.mitems:
         if not shortDescription.isEmptyOrWhitespace():

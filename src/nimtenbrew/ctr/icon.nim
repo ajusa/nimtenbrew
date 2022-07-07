@@ -1,7 +1,6 @@
 import ../strings
 
 import strutils
-import strformat
 
 import nimPNG
 import stew/endians2
@@ -13,12 +12,15 @@ proc load*(png_path: string, size: int): string =
     try:
         let png = nimPNG.loadPNG32(png_path)
 
+        if png.isNil():
+            strings.error(Error.InvalidPNG, png_path)
+
         if png.width != size and png.height != size:
-            strings.error(Error.InvalidCtrIconSize)
+            strings.error(Error.InvalidCtrIconSize, png.width, png.height, size)
 
         return png.data
     except Exception:
-        return ""
+        strings.error(Error.InvalidPNG, png_path)
 
 ## https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp#L120-L126
 const TILE_ORDER: seq[int] = @[0, 1, 8, 9, 2, 3, 10, 11, 16, 17, 24, 25, 18, 19,
@@ -26,13 +28,13 @@ const TILE_ORDER: seq[int] = @[0, 1, 8, 9, 2, 3, 10, 11, 16, 17, 24, 25, 18, 19,
         33, 40, 41, 34, 35, 42, 43, 48, 49, 56, 57, 50, 51, 58, 59, 36, 37, 44,
         45, 38, 39, 46, 47, 52, 53, 60, 61, 54, 55, 62, 63]
 
-proc convertToRGB565(a, r, g, b: uint8): uint16 =
+proc convertToRGB565(a, r, g, b: float): uint16 =
     ## Converts ARGB colors to RGB565
     ## https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp#L274-L285
 
-    var newRed = ((1.float * r.float * a.float) / 255.float).uint16
-    var newGreen = ((1.float * g.float * a.float) / 255.float).uint16
-    var newBlue = ((1.float * b.float * a.float) / 255.float).uint16
+    var newRed = ((1.0 * r * a) / 255.0).uint16
+    var newGreen = ((1.0 * g * a) / 255.0).uint16
+    var newBlue = ((1.0 * b * a) / 255.0).uint16
 
     newRed = (newRed shr 3)
     newGreen = (newGreen shr 2)
@@ -44,14 +46,7 @@ proc blendColor(a, b, c, d: uint8): uint8 =
     ## Blends colors for ctr::smdh::smallIcon
     ## https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp#L287-L295
 
-    result = 0
-
-    result += a
-    result += b
-    result += c
-    result += d
-
-    return (result + 2) div 4
+    return (2 + a + b + c + d) div 4
 
 proc convertPNGToIcon*(png_data: string): seq[uint16] =
     ## Converts the `png_data` from `icon::load` to an `smdh::largeIcon`
@@ -72,10 +67,10 @@ proc convertPNGToIcon*(png_data: string): seq[uint16] =
                 let arrayIndex = 4 * (48 * (y + yy) + (x + xx))
                 var rgba = cast[ptr UncheckedArray[uint8]](unsafeAddr(png_data[arrayIndex]))
 
-                let r = rgba[0].uint8
-                let g = rgba[1].uint8
-                let b = rgba[2].uint8
-                let a = rgba[3].uint8
+                let r = rgba[0].float
+                let g = rgba[1].float
+                let b = rgba[2].float
+                let a = rgba[3].float
 
                 largeIcon[index] = convertToRGB565(a, r, g, b)
                 index += 1
