@@ -17,8 +17,8 @@ proc toUtf16*(str: string, align: int): seq[uint16] =
 proc toUtf8*(str: seq[uint16]): string =
     ## Converts to UTF-8 from UTF16
 
-    return cast[string](cast[seq[int8]](str)).convert("UTF-8",
-            "UTF-16").replace("\0", "")
+    let utf8 = cast[string](str).convert("UTF-8", "UTF-16")
+    return utf8.replace("\0", "")
 
 proc toUtf8*(str: seq[uint8]): string =
     ## Converts to UTF-8
