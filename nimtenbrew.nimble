@@ -1,12 +1,14 @@
 # Package
 
 version       = "0.1.0"
-author        = "ajusa"
-description   = "Useful parsing stuff for homebrew"
+author        = "ajusa & TurtleP"
+description   = "Useful parsing stuff for Nintendo Homebrew"
 license       = "MIT"
 srcDir        = "src"
 
-
 # Dependencies
-requires "nim >= 1.4.4"
-requires "binarylang == 0.3.2"
+requires "nim >= 1.6.0"
+requires "binarylang"
+requires "encode"
+requires "nimPNG"
+requires "stew"
