@@ -30,9 +30,9 @@ suite "Ctr Testing":
     const EXPECTED_DESCRIPTION = "Built with devkitARM & libctru"
     const EXPECTED_AUTHOR = "Unspecified Author"
 
-    const INVALID_TITLE = &"title: expected {EXPECTED_TITLE}, got $1"
-    const INVALID_DESCRIPTION = &"description: expected {EXPECTED_DESCRIPTION}, got $1"
-    const INVALID_AUTHOR = &"author: expected {EXPECTED_AUTHOR}, got $1"
+    const INVALID_TITLE = &"title: expected {EXPECTED_TITLE}, got `$1`"
+    const INVALID_DESCRIPTION = &"description: expected {EXPECTED_DESCRIPTION}, got `$1`"
+    const INVALID_AUTHOR = &"author: expected {EXPECTED_AUTHOR}, got `$1`"
 
     setup:
         ## Reset FileStreams before running tests, if applicable
