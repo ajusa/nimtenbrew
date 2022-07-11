@@ -2,8 +2,6 @@ import binarylang
 
 import ../utf
 
-import strutils
-
 ## ApplicationTitle
 ## https://switchbrew.org/wiki/NACP#ApplicationTitle
 struct(*appTitle, endian = l):

@@ -1,7 +1,6 @@
-import encode
+import flatty/encode
 
 import strutils
-import encodings
 
 proc toUtf16*(str: string, align: int): seq[uint16] =
     ## Converts to UTF-16LE
@@ -17,8 +16,8 @@ proc toUtf16*(str: string, align: int): seq[uint16] =
 proc toUtf8*(str: seq[uint16]): string =
     ## Converts to UTF-8 from UTF16
 
-    return cast[string](cast[seq[int8]](str)).convert("UTF-8",
-            "UTF-16").replace("\0", "")
+    let utf16String = cast[string](str)
+    return encode.fromUTF16LE(utf16String).replace("\0", "")
 
 proc toUtf8*(str: seq[uint8]): string =
     ## Converts to UTF-8
