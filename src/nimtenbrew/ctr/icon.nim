@@ -22,12 +22,6 @@ proc load*(png_path: string, size: int): string =
     except Exception:
         strings.error(Error.InvalidPNG, png_path)
 
-## https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp#L120-L126
-const TILE_ORDER: seq[int] = @[0, 1, 8, 9, 2, 3, 10, 11, 16, 17, 24, 25, 18, 19,
-        26, 27, 4, 5, 12, 13, 6, 7, 14, 15, 20, 21, 28, 29, 22, 23, 30, 31, 32,
-        33, 40, 41, 34, 35, 42, 43, 48, 49, 56, 57, 50, 51, 58, 59, 36, 37, 44,
-        45, 38, 39, 46, 47, 52, 53, 60, 61, 54, 55, 62, 63]
-
 proc convertToRGB565(a, r, g, b: float): uint16 =
     ## Converts ARGB colors to RGB565
     ## https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp#L274-L285
@@ -42,37 +36,34 @@ proc convertToRGB565(a, r, g, b: float): uint16 =
 
     return toLE((newRed shl 11) or (newGreen shl 5) or newBlue)
 
-proc blendColor(a, b, c, d: uint8): uint8 =
-    ## Blends colors for ctr::smdh::smallIcon
-    ## https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp#L287-L295
-
-    return (2 + a + b + c + d) div 4
-
 proc convertPNGToIcon*(png_data: string): seq[uint16] =
     ## Converts the `png_data` from `icon::load` to an `smdh::largeIcon`
-    ## https://github.com/devkitPro/3dstools/blob/master/src/smdhtool.cpp#L341-417
-
     if png_data.isEmptyOrWhitespace():
         strings.error(Error.InvalidIconData)
+    
+    const HEIGHT = 48
+    var largeIcon = newSeq[uint16](HEIGHT * HEIGHT) # square, so height = width
 
-    var largeIcon = newSeq[uint16](0x900)
-    var index: int = 0
+    var i = 0
+    proc tile(x = 0, y = 0, length: int) =
+        if length == 1:
+            var rgba = cast[ptr UncheckedArray[uint8]](unsafeAddr(png_data[i]))
+            let r = rgba[0].float
+            let g = rgba[1].float
+            let b = rgba[2].float
+            let a = rgba[3].float
 
-    for y in countup(0, 48 - 1, 8):
-        for x in countup(0, 48 - 1, 8):
-            for k in 0 ..< 8 * 8:
-                let xx = (TILE_ORDER[k] and 0x07)
-                let yy = (TILE_ORDER[k] shr 0x03)
+            largeIcon[x + y * HEIGHT] = convertToRGB565(a, r, g, b)
+            inc i
+            return
+        let halfLength = length div 2
+        tile(x, y, halfLength)
+        tile(x + halfLength, y, halfLength)
+        tile(x, y + halfLength, halfLength)
+        tile(x + halfLength, y + halfLength, halfLength)
 
-                let arrayIndex = 4 * (48 * (y + yy) + (x + xx))
-                var rgba = cast[ptr UncheckedArray[uint8]](unsafeAddr(png_data[arrayIndex]))
-
-                let r = rgba[0].float
-                let g = rgba[1].float
-                let b = rgba[2].float
-                let a = rgba[3].float
-
-                largeIcon[index] = convertToRGB565(a, r, g, b)
-                index += 1
-
+    const NUM_TILES_WIDE = HEIGHT div 8 # tiles are 8x8
+    for y in 0..<NUM_TILES_WIDE:
+        for x in 0..<NUM_TILES_WIDE:
+            tile(x * 8, y * 8, 8)
     return largeIcon
