@@ -47,13 +47,13 @@ proc convertPNGToIcon*(png_data: string): seq[uint16] =
     var i = 0
     proc tile(x = 0, y = 0, length: int) =
         if length == 1:
-            var rgba = cast[ptr UncheckedArray[uint8]](unsafeAddr(png_data[i]))
+            var rgba = cast[ptr UncheckedArray[uint8]](unsafeAddr(png_data[(x + y * HEIGHT) * 4]))
             let r = rgba[0].float
             let g = rgba[1].float
             let b = rgba[2].float
             let a = rgba[3].float
 
-            largeIcon[x + y * HEIGHT] = convertToRGB565(a, r, g, b)
+            largeIcon[i] = convertToRGB565(a, r, g, b)
             inc i
             return
         let halfLength = length div 2
