@@ -3,6 +3,9 @@
 import nimtenbrew/ctr/binary
 import nimtenbrew/ctr/smdh
 
+import nimtenbrew/ctr/tex3ds
+import nimtenbrew/ctr/enums
+
 import std/unittest
 
 import streams
@@ -23,7 +26,12 @@ suite "Ctr Testing":
     assert(not NO_SMDH.isNil, "no_smdh FileStream is nil")
 
     let ICON_CUSTOM = newFileStream(&"{FILEPATH}/icon_test.3dsx", fmRead)
+    assert(not ICON_CUSTOM.isNil, "icon_test FileStream is nil")
+
     let ICON_PATH = &"{FILEPATH}/test.png"
+
+    let FONT_TEXTURE = newFileStream(&"{FILEPATH}/font.t3x", fmRead)
+    assert(not FONT_TEXTURE.isNil, "sprites FileStream is nil")
 
     const HEADER_SIZE_TOO_SMALL = &"header size: expected > {BINARY_HEADER_SIZE}, got $1"
     const HEADER_SIZE_INVALID = &"header size: expected == {BINARY_HEADER_SIZE}, got $1"
@@ -40,6 +48,38 @@ suite "Ctr Testing":
     const INVALID_ICON = "Invalid matching `$1` data at index #$2: expected, $3, got $4"
     const INVALID_ICON_LEN = "Invalid matching `$1` length: expected $2, got $3"
 
+    const EXPECTED_COUNT = 0x01
+    const INVALID_COUNT = &"Invalid Subtexture Count: expected {EXPECTED_COUNT}, got $1"
+
+    const EXPECTED_GPU_MODE = ord(GPU_TEX_2D)
+    const INVALID_GPU_MODE = &"Invalid GPU_MODE: expected {GPU_TEX_2D}, got $1"
+
+    const EXPECTED_GPU_FORMAT = ord(GPU_RGBA8)
+    const INVALID_GPU_FORMAT = &"Invalid GPU_FORMAT: expected {EXPECTED_GPU_FORMAT}, got $1"
+
+    const EXPECTED_CUBE_SKYBOX = false
+    const INVALID_CUBEMAP_SKYBOX = &"Invalid value for Cubemap/Skybox: expected `{EXPECTED_CUBE_SKYBOX}`, got `$1`"
+
+    const EXPECTED_MIPMAP_LEVELS = 0x0
+    const INVALID_MIPMAP_LEVELS = &"Invalid value for MipMap Levels: expected {EXPECTED_MIPMAP_LEVELS}, got $1"
+
+    const EXPECTED_TEXTURE_WIDTH = 0x400
+    const EXPECTED_TEXTURE_HEIGHT = 0x10
+
+    const INVALID_TEXTURE_SIZE = &"Invalid Texture Size: expected {EXPECTED_TEXTURE_WIDTH}x{EXPECTED_TEXTURE_HEIGHT}, got $1x$2"
+
+    const EXPECTED_SUBTEX_WIDTH = 0x200
+    const EXPECTED_SUBTEX_HEIGHT = 0x08
+
+    const INVALID_SUBTEXTURE_SIZE = &"Invalid SubTexture Size: expected {EXPECTED_SUBTEX_WIDTH}x{EXPECTED_SUBTEX_HEIGHT}, got $1x$2"
+
+    const EXPECTED_LEFT_CORNER = (1.uint16, 0.0009765625.float)
+    const EXPECTED_TOP_CORNER = (960.uint16, 0.9375.float)
+    const EXPECTED_RIGHT_CORNER = (513.uint16, 0.5009765625.float)
+    const EXPECTED_BOTTOM_CORNER = (448.uint16, 0.4375.float)
+
+    const INVALID_CORNER = &"Invalid `$1` SubTexture Corner: expected $2, got $3"
+
     setup:
         ## Reset FileStreams before running tests, if applicable
 
@@ -54,6 +94,10 @@ suite "Ctr Testing":
 
         if ICON_CUSTOM.getPosition() != 0:
             ICON_CUSTOM.setPosition(0)
+
+        if FONT_TEXTURE.getPosition() != 0:
+            FONT_TEXTURE.setPosition(0)
+
 
     test "3dsx with Extended Header":
         let header = toCtrHeader(ICON_ROMFS.readStr(BINARY_HEADER_SIZE.int))
@@ -134,7 +178,47 @@ suite "Ctr Testing":
             assert(smdhData.largeIcon[index] == smdhDataTest.largeIcon[index], INVALID_ICON.format(
                     "largeIcon", index, smdhDataTest.largeIcon[index], smdhData.largeIcon[index]))
 
+    test "tex3ds texture":
+        let header = toTex3dsHeader(FONT_TEXTURE.readAll())
 
+        let subTextureCount = header.subTextureCount
+        assert(subTextureCount == EXPECTED_COUNT, INVALID_COUNT.format(subTextureCount))
+
+        let gpuTextureType = header.gpuTextureType
+        assert(gpuTextureType == ord(EXPECTED_GPU_MODE), INVALID_GPU_MODE.format(gpuTextureType))
+
+        let gpuTextureFormat = header.gpuTextureFormat
+        assert(gpuTextureFormat == ord(EXPECTED_GPU_FORMAT), INVALID_GPU_FORMAT.format(gpuTextureFormat))
+
+        let cubeMapSkybox = header.isCubeMapSkybox()
+        assert(cubeMapSkybox == EXPECTED_CUBE_SKYBOX, INVALID_CUBEMAP_SKYBOX.format(cubeMapSkybox))
+
+        let mipMapLevels = header.mipmapLevels
+        assert(mipMapLevels == EXPECTED_MIPMAP_LEVELS, INVALID_MIPMAP_LEVELS.format(mipMapLevels))
+
+        let (powerTwoWidth, powerTwoHeight) = header.getPowerTwoDimensions()
+        assert(powerTwoWidth == EXPECTED_TEXTURE_WIDTH and powerTwoHeight ==
+                EXPECTED_TEXTURE_HEIGHT, INVALID_TEXTURE_SIZE.format(powerTwoWidth, powerTwoHeight))
+
+        let (subWidth, subHeight) = header.subTextures[0].getDimensions()
+        assert(subWidth == EXPECTED_SUBTEX_WIDTH and subHeight == EXPECTED_SUBTEX_HEIGHT,
+                INVALID_SUBTEXTURE_SIZE.format(subWidth, subHeight))
+
+        let (leftCorner, topCorner, rightCorner, bottomCorner) = header.subTextures[0].getCorners()
+
+        assert(leftCorner == EXPECTED_LEFT_CORNER, INVALID_CORNER.format("Left",
+                EXPECTED_LEFT_CORNER, leftCorner))
+
+        assert(topCorner == EXPECTED_TOP_CORNER, INVALID_CORNER.format("top", EXPECTED_TOP_CORNER, topCorner))
+
+        assert(rightCorner == EXPECTED_RIGHT_CORNER, INVALID_CORNER.format("right",
+                EXPECTED_RIGHT_CORNER, rightCorner))
+
+        assert(bottomCorner == EXPECTED_BOTTOM_CORNER, INVALID_CORNER.format("bottom",
+                EXPECTED_BOTTOM_CORNER, bottomCorner))
+
+
+    FONT_TEXTURE.close()
     ICON_ROMFS.close()
     ICON_NO_ROMFS.close()
     NO_SMDH.close()
