@@ -22,6 +22,9 @@ suite "Ctr Testing":
     let NO_SMDH = newFileStream(&"{FILEPATH}/no_smdh.3dsx", fmRead)
     assert(not NO_SMDH.isNil, "no_smdh FileStream is nil")
 
+    let ICON_CUSTOM = newFileStream(&"{FILEPATH}/icon_test.3dsx", fmRead)
+    let ICON_PATH = &"{FILEPATH}/test.png"
+
     const HEADER_SIZE_TOO_SMALL = &"header size: expected > {BINARY_HEADER_SIZE}, got $1"
     const HEADER_SIZE_INVALID = &"header size: expected == {BINARY_HEADER_SIZE}, got $1"
     const EXTHEADER_OFFSET_ZERO = &"smdhOffset: expected > 0, got $1"
@@ -34,6 +37,9 @@ suite "Ctr Testing":
     const INVALID_DESCRIPTION = &"description: expected {EXPECTED_DESCRIPTION}, got `$1`"
     const INVALID_AUTHOR = &"author: expected {EXPECTED_AUTHOR}, got `$1`"
 
+    const INVALID_ICON = "Invalid matching `$1` data at index #$2: expected, $3, got $4"
+    const INVALID_ICON_LEN = "Invalid matching `$1` length: expected $2, got $3"
+
     setup:
         ## Reset FileStreams before running tests, if applicable
 
@@ -45,6 +51,9 @@ suite "Ctr Testing":
 
         if NO_SMDH.getPosition() != 0:
             NO_SMDH.setPosition(0)
+
+        if ICON_CUSTOM.getPosition() != 0:
+            ICON_CUSTOM.setPosition(0)
 
     test "3dsx with Extended Header":
         let header = toCtrHeader(ICON_ROMFS.readStr(BINARY_HEADER_SIZE.int))
@@ -80,7 +89,53 @@ suite "Ctr Testing":
             assert(title[1] == EXPECTED_DESCRIPTION, INVALID_DESCRIPTION.format(title[1]))
             assert(title[2] == EXPECTED_AUTHOR, INVALID_AUTHOR.format(title[2]))
 
+    test "3dsx icon":
+        ## Set the Icon for this file
+
+        let header = toCtrHeader(ICON_ROMFS.readStr(BINARY_HEADER_SIZE.int))
+        let size = header.headerSize
+
+        assert(size > BINARY_HEADER_SIZE, HEADER_SIZE_TOO_SMALL.format(size))
+
+        let extHeaderBuffer = ICON_ROMFS.readStr(EXTENDED_HEADER_SIZE.int)
+        let extHeader = toCtrExtendedHeader(extHeaderBuffer)
+        let offset = extHeader.smdhOffset
+
+        assert(offset > 0, EXTHEADER_OFFSET_ZERO.format(offset))
+
+        ICON_ROMFS.setPosition(offset.int)
+        var smdhData = toSmdh(ICON_ROMFS.readStr(extHeader.smdhSize.int))
+
+        smdhData.setIcon(ICON_PATH)
+
+        ## Read our Test Example
+
+        let headerTest = toCtrHeader(ICON_CUSTOM.readStr(BINARY_HEADER_SIZE.int))
+        let sizeTest = headerTest.headerSize
+
+        assert(sizeTest > BINARY_HEADER_SIZE, HEADER_SIZE_TOO_SMALL.format(sizeTest))
+
+        let extHeaderBufferTest = ICON_CUSTOM.readStr(EXTENDED_HEADER_SIZE.int)
+        let extHeaderTest = toCtrExtendedHeader(extHeaderBufferTest)
+        let offsetTest = extHeader.smdhOffset
+
+        assert(offsetTest > 0, EXTHEADER_OFFSET_ZERO.format(offsetTest))
+
+        ICON_CUSTOM.setPosition(offsetTest.int)
+        var smdhDataTest = toSmdh(ICON_CUSTOM.readStr(extHeaderTest.smdhSize.int))
+
+        let customIconLen = len(smdhData.largeIcon)
+        let testIconLen = len(smdhDataTest.largeIcon)
+
+        assert(customIconLen == testIconLen, INVALID_ICON_LEN.format("largeIcon", testIconLen,
+                customIconLen))
+
+        for index in 0 ..< customIconLen:
+            assert(smdhData.largeIcon[index] == smdhDataTest.largeIcon[index], INVALID_ICON.format(
+                    "largeIcon", index, smdhDataTest.largeIcon[index], smdhData.largeIcon[index]))
+
 
     ICON_ROMFS.close()
     ICON_NO_ROMFS.close()
     NO_SMDH.close()
+    ICON_CUSTOM.close()
