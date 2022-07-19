@@ -5,22 +5,22 @@ import strutils
 import nimPNG
 import stew/endians2
 
-proc load*(png_path: string, size: int): string =
+proc load*(pngPath: string, size: int): string =
     ## Loads a PNG icon at `png_path` with expected size `size`
     ## Returns the data buffer loaded by nimPNG
 
     try:
-        let png = nimPNG.loadPNG32(png_path)
+        let png = nimPNG.loadPNG32(pngPath)
 
         if png.isNil():
-            strings.error(Error.InvalidPNG, png_path)
+            strings.error(Error.InvalidPNG, pngPath)
 
         if png.width != size and png.height != size:
             strings.error(Error.InvalidCtrIconSize, png.width, png.height, size)
 
         return png.data
     except Exception:
-        strings.error(Error.InvalidPNG, png_path)
+        strings.error(Error.InvalidPNG, pngPath)
 
 proc convertToRGB565(a, r, g, b: float): uint16 =
     ## Converts ARGB colors to RGB565
@@ -36,9 +36,9 @@ proc convertToRGB565(a, r, g, b: float): uint16 =
 
     return toLE((newRed shl 11) or (newGreen shl 5) or newBlue)
 
-proc convertPNGToIcon*(png_data: string): seq[uint16] =
+proc convertPNGToIcon*(pngData: string): seq[uint16] =
     ## Converts the `png_data` from `icon::load` to an `smdh::largeIcon`
-    if png_data.isEmptyOrWhitespace():
+    if pngData.isEmptyOrWhitespace():
         strings.error(Error.InvalidIconData)
     
     const HEIGHT = 48
@@ -47,7 +47,7 @@ proc convertPNGToIcon*(png_data: string): seq[uint16] =
     var i = 0
     proc tile(x = 0, y = 0, length: int) =
         if length == 1:
-            var rgba = cast[ptr UncheckedArray[uint8]](unsafeAddr(png_data[(x + y * HEIGHT) * 4]))
+            var rgba = cast[ptr UncheckedArray[uint8]](unsafeAddr(pngData[(x + y * HEIGHT) * 4]))
             let r = rgba[0].float
             let g = rgba[1].float
             let b = rgba[2].float
@@ -63,7 +63,9 @@ proc convertPNGToIcon*(png_data: string): seq[uint16] =
         tile(x + halfLength, y + halfLength, halfLength)
 
     const NUM_TILES_WIDE = HEIGHT div 8 # tiles are 8x8
-    for y in 0..<NUM_TILES_WIDE:
-        for x in 0..<NUM_TILES_WIDE:
+
+    for y in 0 ..< NUM_TILES_WIDE:
+        for x in 0 ..< NUM_TILES_WIDE:
             tile(x * 8, y * 8, 8)
+
     return largeIcon
