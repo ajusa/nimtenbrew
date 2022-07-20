@@ -2,6 +2,8 @@ import binarylang
 
 import ../utf
 
+import strutils
+
 ## ApplicationTitle
 ## https://switchbrew.org/wiki/NACP#ApplicationTitle
 struct(*appTitle, endian = l):
@@ -61,5 +63,8 @@ proc setTitles*(nacp: Nacp, name: string = "", author: string = "") =
     var titles = nacp.appTitles
 
     for title in titles:
-        title.name = utf.toUtf8(name, 0x200)
-        title.author = utf.toUtf8(author, 0x200)
+        if not name.isEmptyOrWhitespace():
+            title.name = utf.toUtf8(name, 0x200)
+
+        if not author.isEmptyOrWhitespace():
+            title.author = utf.toUtf8(author, 0x200)
