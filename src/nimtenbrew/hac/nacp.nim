@@ -56,3 +56,10 @@ proc getTitles*(nacp: Nacp): seq[seq[string]] =
         result.add(values)
 
     return result
+
+proc setTitles*(nacp: Nacp, name: string = "", author: string = "") =
+    var titles = nacp.appTitles
+
+    for title in titles:
+        title.name = utf.toUtf8(name, 0x200)
+        title.author = utf.toUtf8(author, 0x200)
