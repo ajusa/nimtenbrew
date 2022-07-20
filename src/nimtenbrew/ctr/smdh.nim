@@ -46,7 +46,7 @@ const SMDH_STRUCT_SIZE*: uint = 0x36C0
 proc setIcon*(smdh: var Smdh, pngPath: string) =
     ## Sets the icon for the `smdh` from a PNG at `pngPath`
 
-    let pngData = icon.load(png_path, 48)
+    let pngData = icon.load(pngPath, 48)
     smdh.largeIcon = icon.convertPNGToIcon(pngData)
 
 proc setTitles*(smdh: var Smdh, shortDescription, longDescription,
