@@ -28,8 +28,11 @@ suite "Hac Testing":
     const EXPECTED_TITLE = "romfs"
     const EXPECTED_AUTHOR = "Unspecified Author"
 
-    const INVALID_TITLE = &"title: expected {EXPECTED_TITLE}, got $1"
-    const INVALID_AUTHOR = &"author: expected {EXPECTED_AUTHOR}, got $1"
+    const EXPECTED_NEW_TITLE = "test"
+    const EXPECTED_NEW_AUTHOR = "I don't know"
+
+    const INVALID_TITLE = &"title: expected $1, got $2"
+    const INVALID_AUTHOR = &"author: expected $1, got $2"
 
     setup:
         ## Reset FileStreams before running tests, if applicable
@@ -92,8 +95,29 @@ suite "Hac Testing":
         let titles = nacpData.getTitles()
 
         for title in titles:
-            assert(title[0] == EXPECTED_TITLE, INVALID_TITLE.format(title[0]))
-            assert(title[1] == EXPECTED_AUTHOR, INVALID_AUTHOR.format(title[1]))
+            assert(title[0] == EXPECTED_TITLE, INVALID_TITLE.format(EXPECTED_TITLE, title[0]))
+            assert(title[1] == EXPECTED_AUTHOR, INVALID_AUTHOR.format(EXPECTED_AUTHOR, title[1]))
+
+    test "nro Title change":
+        discard toHacStart(ICON_ROMFS.readStr(START_SIZE.int))
+        let header = toHacHeader(ICON_ROMFS.readStr(NRO_HEADER_SIZE.int))
+
+        ICON_ROMFS.setPosition(0)
+        discard ICON_ROMFS.readStr(header.totalSize.int)
+
+        let assetsHeader = toAssetsHeader(ICON_ROMFS.readStr(ASSETS_HEADER_SIZE.int))
+
+        ICON_ROMFS.setPosition((header.totalSize + assetsHeader.nacp.offset).int)
+        let nacpData = toNacp(ICON_ROMFS.readStr(assetsHeader.nacp.size.int))
+
+        nacpData.setTitles("test", "I don't know")
+
+        let titles = nacpData.getTitles()
+
+        for title in titles:
+            assert(title[0] == EXPECTED_NEW_TITLE, INVALID_TITLE.format(EXPECTED_NEW_TITLE, title[0]))
+            assert(title[1] == EXPECTED_NEW_AUTHOR, INVALID_AUTHOR.format(EXPECTED_NEW_AUTHOR, title[1]))
+
 
     ICON_ROMFS.close()
     ICON_NO_ROMFS.close()

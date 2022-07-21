@@ -23,3 +23,7 @@ proc toUtf8*(str: seq[uint8]): string =
     ## Converts to UTF-8
 
     return cast[string](str).replace("\0", "")
+
+proc toUtf8*(str: string, align: int) : seq[uint8] =
+    let converted = str.alignLeft(align, '\0')
+    return cast[seq[uint8]](converted)
